@@ -6,6 +6,7 @@
  */
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include "time.h"
 
 unsigned long sys_time = 0;
 
@@ -31,20 +32,20 @@ void initTime() {
 		clksel++;
 	}
 
-	TCCR0B = clksel;
-	OCR0A = (unsigned char)(n & 0xff) - 1;
+	TCCR0B = clksel; //faktor preskaliranja
+	OCR0A = (unsigned char)(n & 0xff) - 1; //kastovanje prom. n i maskiranje 8 nizih bita
 	TIMSK0 = 0X02;
 
-	sei();
+	sei(); //dozvola prekida
 }
 
 unsigned long millis(){
 
 	unsigned long tmp;
-	/*osiguravamo da se javi prekid usled ocitavanja vrednosti sys_time*/
-	cli();
+	/*osiguravamo da se ne javi prekid usled ocitavanja vrednosti sys_time*/
+	cli(); //zabrana prekida
 	tmp = sys_time;
-	sei();
+	sei(); //dozvola prekida
 
 	return tmp;
 }
@@ -52,7 +53,7 @@ unsigned long millis(){
 
 void delay(unsigned long d){
 
-	unsigned long t0 = millis();
+	unsigned long t0 = millis(); //trenutak kada je pozvana delay() fja
 
 	while(millis() - t0 < d);
 }
